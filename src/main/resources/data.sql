@@ -1,0 +1,9 @@
+INSERT INTO CLIENTS (name, account) VALUES ('Lokesh', '106256.25');
+INSERT INTO CLIENTS (name, account) VALUES ('Ruslan', '25600.00');
+INSERT INTO CLIENTS (name, account) VALUES ('Caption', '1062.50');
+INSERT INTO CLIENTS (name, account) VALUES ('Sveta', '12056.45');
+INSERT INTO CLIENTS (name, account) VALUES ('Andrey', '2056.25');
+INSERT INTO CLIENTS (name, account) VALUES ('Vova', '10256.00');
+INSERT INTO CLIENTS (name, account) VALUES ('Deja', '1056.50');
+INSERT INTO CLIENTS (name, account) VALUES ('Jojo', '6256.25');
+INSERT INTO CLIENTS (name, account) VALUES ('Tim', '65556.95');
