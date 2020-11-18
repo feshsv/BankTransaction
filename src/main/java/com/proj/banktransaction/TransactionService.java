@@ -16,7 +16,7 @@ public class TransactionService {
         this.clientsRep = clientsRep;
     }
 
-    String operation(Integer sender, Integer host, BigDecimal rightSumm) {
+    public String operation(Integer sender, Integer host, BigDecimal rightSumm) {
         Optional<Clients> senderClient;
         Optional<Clients> hostClient;
         String message = "";

@@ -9,14 +9,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HttpController {
     private InputCheck inputCheck;
+    private TransactionService transactionService;
 
     @Autowired
-    public HttpController(InputCheck inputCheck) {
+    public HttpController(InputCheck inputCheck, TransactionService transactionService) {
         this.inputCheck = inputCheck;
+        this.transactionService = transactionService;
     }
 
     @GetMapping(value = "send", produces = MediaType.APPLICATION_JSON_VALUE)
     public String restInOut(String sendFromId, String sendToId, String money) {
-        return inputCheck.checkValid(sendFromId, sendToId, money);
+        CheckResponse response = inputCheck.checkValid(sendFromId, sendToId, money);
+        if (response.isValid()) {
+            return transactionService.operation(response.getSender(), response.getHost(), response.getRightSumm());
+        } else {
+            return response.getMessage();
+        }
     }
 }

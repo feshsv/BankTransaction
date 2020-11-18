@@ -8,9 +8,10 @@ import java.math.RoundingMode;
 
 
 @Component
-final class InputCheck {
+public class InputCheck {
     private ClientsRep clientsRep;
-    private TransactionService transactionService;
+    private CheckResponse checkResponse;
+
     private Integer sender;
     private Integer host;
     private BigDecimal rightSumm;
@@ -23,17 +24,14 @@ final class InputCheck {
     private static final String ERROR_CLIENT_NOT_FOUND = "Не найден клиент с id ";
 
 
-    private InputCheck() {
-
-    }
-
     @Autowired
-    InputCheck(ClientsRep clientsRep, TransactionService transactionService) {
+    public InputCheck(ClientsRep clientsRep, CheckResponse checkResponse) {
         this.clientsRep = clientsRep;
-        this.transactionService = transactionService;
+        this.checkResponse = checkResponse;
     }
 
-    String checkValid(String sendFromId, String sendToId, String money) {
+
+    public CheckResponse checkValid(String sendFromId, String sendToId, String money) {
         String message = "ok";
         try {
             sender = Integer.valueOf(sendFromId);
@@ -63,9 +61,14 @@ final class InputCheck {
         }
 
         if (message.equals("ok")) {
-            return transactionService.operation(sender, host, rightSumm);
+            checkResponse.setSender(sender);
+            checkResponse.setHost(host);
+            checkResponse.setRightSumm(rightSumm);
+            checkResponse.setValid(true);
+        } else {
+            checkResponse.setMessage(message);
+            checkResponse.setValid(false);
         }
-
-        return message;
+        return checkResponse;
     }
 }
