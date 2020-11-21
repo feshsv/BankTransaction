@@ -1,45 +1,64 @@
 package com.proj.banktransaction;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(HttpController.class)
 class HttpControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    private static final String HELLO_MOCK = "Hello, Mock";
+    private static final String ERROR = "ERROR";
 
     @MockBean
     private TransactionService transactionService;
-
     @MockBean
-    private CheckResponse checkResponse;
-
-    private List<Clients> clientsList;
-
-//    @BeforeEach
-//    void setUp() {
-//        this.clientsList = new ArrayList<>();
-//        this.clientsList.add(new Clients(1, "Sasha", new BigDecimal("1234.11")));
-//        this.clientsList.add(new Clients(2, "Masha", new BigDecimal("234")));
-//        this.clientsList.add(new Clients(3, "Dasha", new BigDecimal("134.10")));
-//    }
+    private InputCheck inputCheck;
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
-    public void restInOut() throws Exception {
-        when(transactionService.operation(checkResponse.getSender(), checkResponse.getHost(), checkResponse.getRightSumm())).thenReturn("Hello, Mock");
-//        this.mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
-//                .andExpect(content().string(containsString("Hello, Mock")));
+    public void restInOutSuccess() throws Exception {
+        //Когда
+        when(inputCheck.checkValid(any(), any(), any())).thenReturn(CheckResponse.of(10, 10, BigDecimal.TEN));
+        when(transactionService.operation(eq(10), eq(10), eq(BigDecimal.TEN))).thenReturn(HELLO_MOCK);
+        //Событие
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/send"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(containsString(HELLO_MOCK)));
+        //Верификация
+        verify(inputCheck).checkValid(any(), any(), any());
+        verify(transactionService).operation(anyInt(), anyInt(), any());
     }
+
+    @Test
+    public void restInOutFail() throws Exception {
+        //Когда
+        when(inputCheck.checkValid(any(), any(), any())).thenReturn(CheckResponse.of(ERROR));
+        //Событие
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/send"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(containsString(ERROR)));
+        //Верификация
+        verify(transactionService, never()).operation(any(), any(), any());
+    }
+
 }

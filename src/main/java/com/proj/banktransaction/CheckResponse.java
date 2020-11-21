@@ -1,16 +1,29 @@
 package com.proj.banktransaction;
 
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 
-@Component
 public class CheckResponse {
     private Integer sender;
     private Integer host;
     private BigDecimal rightSumm;
     private String message;
-    private boolean isValid;
+    private boolean valid;
+
+    public static CheckResponse of(Integer sender, Integer host, BigDecimal rightSumm) {
+        CheckResponse checkResponse = new CheckResponse();
+        checkResponse.setHost(host);
+        checkResponse.setSender(sender);
+        checkResponse.setRightSumm(rightSumm);
+        checkResponse.setValid(true);
+        return checkResponse;
+    }
+
+    public static CheckResponse of(String message) {
+        CheckResponse checkResponse = new CheckResponse();
+        checkResponse.setValid(false);
+        checkResponse.setMessage(message);
+        return checkResponse;
+    }
 
 
     public Integer getSender() {
@@ -38,11 +51,11 @@ public class CheckResponse {
     }
 
     public boolean isValid() {
-        return isValid;
+        return valid;
     }
 
     public void setValid(boolean valid) {
-        isValid = valid;
+        this.valid = valid;
     }
 
     public String getMessage() {

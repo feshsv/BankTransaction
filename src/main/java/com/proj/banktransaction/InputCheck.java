@@ -9,30 +9,24 @@ import java.math.RoundingMode;
 
 @Component
 public class InputCheck {
-    private final ClientsRep clientsRep;
-    private final CheckResponse checkResponse;
-
-    private Integer sender;
-    private Integer host;
-    private BigDecimal rightSumm;
-
-
     private static final String ERROR = "Для перевода необходимо ввести правильные значения:  (номер отправителя (целое число), " +
             "номер получателя (целое число), сумма перевода (пример: 2134.22))";
     private static final String ERROR_WITH_ZERO = "Заданное число меньше ноля. Укажите положительную сумму перевода.";
     private static final String ERROR_SAME_ID = "Перевод самому себе невозможен.";
     private static final String ERROR_CLIENT_NOT_FOUND = "Не найден клиент с id ";
 
+    private final ClientsRep clientsRep;
 
     @Autowired
-    public InputCheck(ClientsRep clientsRep, CheckResponse checkResponse) {
+    public InputCheck(ClientsRep clientsRep) {
         this.clientsRep = clientsRep;
-        this.checkResponse = checkResponse;
     }
 
-
     public CheckResponse checkValid(String sendFromId, String sendToId, String money) {
-        String message = "ok";
+        String message = null;
+        Integer sender = null;
+        Integer host = null;
+        BigDecimal rightSumm = null;
         try {
             sender = Integer.valueOf(sendFromId);
             host  = Integer.valueOf(sendToId);
@@ -48,7 +42,7 @@ public class InputCheck {
                 message = ERROR_CLIENT_NOT_FOUND + sender.toString();
             }
             if (!clientsRep.existsById(host)) {
-                if (message.contains("Не найден клиент с id")) {
+                if (message !=  null && message.contains("Не найден клиент с id")) {
                     message += "\n" + ERROR_CLIENT_NOT_FOUND + host.toString();
                 } else {
                     message = ERROR_CLIENT_NOT_FOUND + host.toString();
@@ -60,16 +54,10 @@ public class InputCheck {
             message = e.toString();
         }
 
-        if (message.equals("ok")) {
-            checkResponse.setSender(sender);
-            checkResponse.setHost(host);
-            checkResponse.setRightSumm(rightSumm);
-            checkResponse.setMessage(message);
-            checkResponse.setValid(true);
+        if (message != null) {
+            return CheckResponse.of(message);
         } else {
-            checkResponse.setMessage(message);
-            checkResponse.setValid(false);
+            return CheckResponse.of(sender, host, rightSumm);
         }
-        return checkResponse;
     }
 }
