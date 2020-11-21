@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Service
 public class TransactionService {
-    private ClientsRep clientsRep;
+    private final ClientsRep clientsRep;
     private static final String ERROR = "Суммы на счёте не дастаточно для совершения операции.";
 
     @Autowired

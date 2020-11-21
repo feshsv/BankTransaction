@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class HttpController {
-    private InputCheck inputCheck;
-    private TransactionService transactionService;
+    private final InputCheck inputCheck;
+    private final TransactionService transactionService;
 
     @Autowired
     public HttpController(InputCheck inputCheck, TransactionService transactionService) {

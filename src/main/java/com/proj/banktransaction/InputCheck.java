@@ -9,8 +9,8 @@ import java.math.RoundingMode;
 
 @Component
 public class InputCheck {
-    private ClientsRep clientsRep;
-    private CheckResponse checkResponse;
+    private final ClientsRep clientsRep;
+    private final CheckResponse checkResponse;
 
     private Integer sender;
     private Integer host;
@@ -64,6 +64,7 @@ public class InputCheck {
             checkResponse.setSender(sender);
             checkResponse.setHost(host);
             checkResponse.setRightSumm(rightSumm);
+            checkResponse.setMessage(message);
             checkResponse.setValid(true);
         } else {
             checkResponse.setMessage(message);
