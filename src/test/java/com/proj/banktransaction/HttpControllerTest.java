@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -13,23 +12,19 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.math.BigDecimal;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @WebMvcTest(HttpController.class)
 class HttpControllerTest {
 
-    private static final String HELLO_MOCK = "Hello, Mock";
+    private static final String OK = "Test ok";
     private static final String ERROR = "ERROR";
 
     @MockBean
-    private TransactionService transactionService;
-    @MockBean
     private InputCheck inputCheck;
+    @MockBean
+    private TransactionService transactionService;
     @Autowired
     private MockMvc mockMvc;
 
@@ -37,12 +32,12 @@ class HttpControllerTest {
     public void restInOutSuccess() throws Exception {
         //Когда
         when(inputCheck.checkValid(any(), any(), any())).thenReturn(CheckResponse.of(10, 10, BigDecimal.TEN));
-        when(transactionService.operation(eq(10), eq(10), eq(BigDecimal.TEN))).thenReturn(HELLO_MOCK);
+        when(transactionService.operation(eq(10), eq(10), eq(BigDecimal.TEN))).thenReturn(OK);
         //Событие
         this.mockMvc.perform(MockMvcRequestBuilders.get("/send"))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string(containsString(HELLO_MOCK)));
+                .andExpect(MockMvcResultMatchers.content().string(containsString(OK)));
         //Верификация
         verify(inputCheck).checkValid(any(), any(), any());
         verify(transactionService).operation(anyInt(), anyInt(), any());
