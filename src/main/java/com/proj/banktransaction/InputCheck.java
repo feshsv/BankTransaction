@@ -12,7 +12,7 @@ public class InputCheck {
     private static final String ERROR = "Для перевода необходимо ввести правильные значения:  (номер отправителя (целое число), " +
             "номер получателя (целое число), сумма перевода (пример: 2134.22))";
     private static final String ERROR_WITH_ZERO = "Заданное число меньше ноля. Укажите положительную сумму перевода.";
-    private static final String ERROR_SAME_ID = "Перевод самому себе невозможен.";
+    private static final String ERROR_SAME_ID = "Перевод самому себе невозможен. Укажите id получателя отличный от id отправителя";
     private static final String ERROR_CLIENT_NOT_FOUND = "Не найден клиент с id ";
 
     private final ClientsRep clientsRep;
