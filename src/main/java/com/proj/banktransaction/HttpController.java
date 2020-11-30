@@ -5,6 +5,16 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Этот класс принимает три параметра по HTTP (id отправителя, id получателя и сумму перевода) в метод restInOut
+ * и с помощью метода checkValid класса InputCheck проверяет возможно ли продолжение транзакции.
+ *
+ * Если продолжение возможно, то вызывает метод operation из класса TransactionService, который проверяет
+ * достаточно ли суммы на счёте отправителя и в случае успешной проверки переводит деньги на счёт получателя.
+ * Изменённые значения сохраняет в базе (только в оперативной памяти).
+ *
+ * Если продолжение невозможно, то возвращает сообщение о причине.
+ */
 
 @RestController
 public class HttpController {

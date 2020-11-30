@@ -2,6 +2,10 @@ package com.proj.banktransaction;
 
 import java.math.BigDecimal;
 
+/**
+ * Класс обслуживает метод checkValid класса InputCheck.
+ */
+
 public class CheckResponse {
     private Integer sender;
     private Integer host;

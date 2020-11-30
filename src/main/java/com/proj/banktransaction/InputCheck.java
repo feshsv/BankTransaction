@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+/**
+ * Класс проверяет возможно ли произвести транзакцию от одного клиента к другому исходя из поступивших данных.
+ */
 
 @Component
 public class InputCheck {
@@ -28,19 +31,32 @@ public class InputCheck {
         Integer host = null;
         BigDecimal rightSumm = null;
         try {
+            // Если пришедшие данные невозможно привести к типам необходимым для транзакции, вернёт ERROR
             sender = Integer.valueOf(sendFromId);
             host  = Integer.valueOf(sendToId);
             rightSumm = new BigDecimal(money);
             rightSumm = rightSumm.setScale(2, RoundingMode.HALF_UP);
+
+            // Если сумма перевода отрицательная перезапишет переменную message сообщением ERROR_WITH_ZERO
             if (BigDecimal.ZERO.compareTo(rightSumm) > 0) {
                 message = ERROR_WITH_ZERO;
             }
+
+            // Если id отправителя равен id получателя перезапишет переменную message сообщением ERROR_SAME_ID
             if (sender.equals(host)) {
                 message = ERROR_SAME_ID;
             }
+
+            // Если клиент с первым указанным id отсутствует в базе данных перезапишет переменную message сообщением
+            // ERROR_CLIENT_NOT_FOUND и указанный id
             if (!clientsRep.existsById(sender)) {
                 message = ERROR_CLIENT_NOT_FOUND + sender.toString();
             }
+
+            // Если клиент со вторым указанным id отсутствует в базе данных перезапишет переменную message сообщением
+            // ERROR_CLIENT_NOT_FOUND и указанный id.
+            // Если ранее было определено, что первый указанный id не найден, то переменную message не перезапишет,
+            // а дополнит сообщением ERROR_CLIENT_NOT_FOUND и указанный id.
             if (!clientsRep.existsById(host)) {
                 if (message !=  null && message.contains("Не найден клиент с id")) {
                     message += "\n" + ERROR_CLIENT_NOT_FOUND + host.toString();
@@ -54,6 +70,8 @@ public class InputCheck {
             message = e.toString();
         }
 
+        // Если переменная message менялась, значит была ошибка и метод вернёт обьект CheckResponse со статусом false
+        // и сообщением об ошибке. В противном случае вернёт обьект CheckResponse со статусом true и данными для транзакции.
         if (message != null) {
             return CheckResponse.of(message);
         } else {
