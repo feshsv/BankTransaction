@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Этот класс принимает три параметра по HTTP (id отправителя, id получателя и сумму перевода) в метод restInOut
- * и с помощью метода checkValid класса InputCheck проверяет возможно ли продолжение транзакции.
+ .
  *
  * Если продолжение возможно, то вызывает метод operation из класса TransactionService, который проверяет
  * достаточно ли суммы на счёте отправителя и в случае успешной проверки переводит деньги на счёт получателя.
@@ -27,6 +26,15 @@ public class HttpController {
         this.transactionService = transactionService;
     }
 
+    /**
+     * Этот класс принимает три параметра по HTTP (id отправителя, id получателя и сумму перевода) в
+     *  и с помощью метода checkValid класса InputCheck проверяет возможно ли продолжение транзакции
+     * @param sendFromId    id отправителя
+     * @param sendToId      id получателя
+     * @param money         сумму перевода
+     * @return              Сообщение о переводе/ или ошибке
+     * @
+     */
     @GetMapping(value = "send", produces = MediaType.APPLICATION_JSON_VALUE)
     public String restInOut(String sendFromId, String sendToId, String money) {
         CheckResponse response = inputCheck.checkValid(sendFromId, sendToId, money);

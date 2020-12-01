@@ -13,20 +13,21 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class TransactionServiceTest {
-    public static final Integer SENDER_ID = 1;
-    public static final Integer HOST_ID = 2;
-    public static final String SENDER_CLIENT_NAME = "Vova";
-    public static final String HOST_CLIENT_NAME = "Rob";
-    public static final BigDecimal SENDER_CLIENT_MONEY = new BigDecimal("1000");
-    public static final BigDecimal HOST_CLIENT_MONEY = new BigDecimal("2000");
-    public static final BigDecimal TRANSACTION_MONEY = new BigDecimal("900");
-    public static final String MESSAGE_SUCCESS = "Начальный балланс:\nОтправитель " + SENDER_CLIENT_NAME + " балланс "
+    private static final Integer SENDER_ID = 1;
+    private static final Integer HOST_ID = 2;
+    private static final String SENDER_CLIENT_NAME = "Vova";
+    private static final String HOST_CLIENT_NAME = "Rob";
+    private static final BigDecimal SENDER_CLIENT_MONEY = new BigDecimal("1000");
+    private static final BigDecimal HOST_CLIENT_MONEY = new BigDecimal("2000");
+    private static final BigDecimal TRANSACTION_MONEY = new BigDecimal("900");
+    private static final String MESSAGE_SUCCESS = "Начальный балланс:\nОтправитель " + SENDER_CLIENT_NAME + " балланс "
             + SENDER_CLIENT_MONEY + "\n" + "Получатель " + HOST_CLIENT_NAME + " балланс "
             + HOST_CLIENT_MONEY + "\nКонечный балланс:\nОтправитель " + SENDER_CLIENT_NAME
             + " балланс " + SENDER_CLIENT_MONEY.subtract(TRANSACTION_MONEY) + "\n" + "Получатель " + HOST_CLIENT_NAME
             + " балланс " + HOST_CLIENT_MONEY.add(TRANSACTION_MONEY);
-    public static final String MESSAGE_FAILURE = "Суммы на счёте не дастаточно для совершения операции."
+    private static final String MESSAGE_FAILURE = "Суммы на счёте не дастаточно для совершения операции."
             + " Доступные средства " + SENDER_CLIENT_MONEY;
+    private static final String TEST_ERROR = "TEST ERROR";
 
     @Autowired
     TransactionService transactionService;
@@ -48,5 +49,12 @@ class TransactionServiceTest {
         when(clientsRep.findById(HOST_ID)).thenReturn(Optional.of(new Clients(HOST_ID, HOST_CLIENT_NAME, HOST_CLIENT_MONEY)));
 
         Assert.assertEquals(transactionService.operation(SENDER_ID, HOST_ID, TRANSACTION_MONEY.add(SENDER_CLIENT_MONEY)), MESSAGE_FAILURE);
+    }
+
+    @Test
+    void operationFailureEX() {
+        when(clientsRep.findById(SENDER_ID)).thenThrow(new RuntimeException(TEST_ERROR));
+
+        Assert.assertEquals(transactionService.operation(SENDER_ID, HOST_ID, TRANSACTION_MONEY.add(SENDER_CLIENT_MONEY)), "TEST ERROR");
     }
 }

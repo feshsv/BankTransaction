@@ -46,7 +46,7 @@ public class TransactionService {
                 return ERROR + " Доступные средства " + senderClient.get().getMoney();
             }
         } catch (Exception e) {
-            return e.toString();
+            return e.getMessage();
         }
         message += "\nКонечный балланс:\nОтправитель " + senderClient.get().getName() + " балланс " + senderClient.get().getMoney() + "\n"
                 + "Получатель " + hostClient.get().getName() + " балланс " + hostClient.get().getMoney();

@@ -25,6 +25,15 @@ public class InputCheck {
         this.clientsRep = clientsRep;
     }
 
+    /**
+     * Валидирует запросы от контроллера {@link HttpController}
+     * @param sendFromId
+     * @param sendToId
+     * @param money
+     * @see HttpController
+     * @implSpec
+     * Все если тут
+     */
     public CheckResponse checkValid(String sendFromId, String sendToId, String money) {
         String message = null;
         Integer sender = null;
