@@ -1,5 +1,7 @@
-package com.proj.banktransaction;
+package com.proj.banktransaction.service;
 
+import com.proj.banktransaction.entityes.Clients;
+import com.proj.banktransaction.repository.ClientsRep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -7,10 +9,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
- * Класс проверяет достаточно ли суммы на счёте отправителя и в случае успешной проверки переводит деньги на счёт получателя.
- * Изменённые значения сохраняет в базе (только в оперативной памяти). Возвращает сообщение о начальных и конечных значениях транзакции.
- *
- * Если продолжение невозможно, то возвращает сообщение о причине.
+ * Класс для проведения транзакции.
+ * Изменённые значения сохраняет в базе (только в оперативной памяти).
  */
 
 @Service
@@ -23,7 +23,18 @@ public class TransactionService {
         this.clientsRep = clientsRep;
     }
 
-    public String operation(Integer sender, Integer host, BigDecimal rightSumm) {
+    /**
+     * Принимает три параметра, проверяет хватит ли денег у отправителя, записывает в БД, генерирует и возвращает сообщение.
+     * @param sender    id отправителя
+     * @param host      id получателя
+     * @param rightSum сумму перевода
+     * @return          Сообщение о переводе или ошибке
+     * @implSpec
+     * Проверяет достаточно денег у отправителя или нет и если да,
+     * то отнимает у отправителя и прибавляет получателю, сохраняя изменения в базу данных.
+     * Если денег не достаточно, то возвращает строку "ERROR + " Доступные средства " + senderClient.get().getMoney()"
+     */
+    public String operation(Integer sender, Integer host, BigDecimal rightSum) {
         Optional<Clients> senderClient;
         Optional<Clients> hostClient;
         String message;
@@ -34,12 +45,9 @@ public class TransactionService {
             message = "Начальный балланс:\nОтправитель " + senderClient.get().getName() + " балланс " + senderClient.get().getMoney() + "\n"
                     + "Получатель " + hostClient.get().getName() + " балланс " + hostClient.get().getMoney();
 
-            // Тут проверяет достаточно денег у отправителя или нет и если да,
-            // то отнимает у отправителя и прибавляет получателю, сохраняя изменения в базу данных.
-            // Если денег не достаточно, то возвращает строку "ERROR + " Доступные средства " + senderClient.get().getMoney()"
-            if(senderClient.get().getMoney().compareTo(rightSumm) > 0) {
-                senderClient.get().setMoney(senderClient.get().getMoney().subtract(rightSumm));
-                hostClient.get().setMoney(hostClient.get().getMoney().add(rightSumm));
+            if(senderClient.get().getMoney().compareTo(rightSum) > 0) {
+                senderClient.get().setMoney(senderClient.get().getMoney().subtract(rightSum));
+                hostClient.get().setMoney(hostClient.get().getMoney().add(rightSum));
                 clientsRep.save(senderClient.get());
                 clientsRep.save(hostClient.get());
             } else {

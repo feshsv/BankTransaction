@@ -1,9 +1,9 @@
-package com.proj.banktransaction;
+package com.proj.banktransaction.validator;
 
 import java.math.BigDecimal;
 
 /**
- * Класс обслуживает метод checkValid класса InputCheck.
+ * Класс нужен для получения объекта валидации методом checkValid класса InputCheck.
  */
 
 public class CheckResponse {

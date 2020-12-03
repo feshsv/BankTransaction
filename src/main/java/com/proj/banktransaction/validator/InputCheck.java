@@ -1,5 +1,7 @@
-package com.proj.banktransaction;
+package com.proj.banktransaction.validator;
 
+import com.proj.banktransaction.controllers.HttpController;
+import com.proj.banktransaction.repository.ClientsRep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,12 +29,30 @@ public class InputCheck {
 
     /**
      * Валидирует запросы от контроллера {@link HttpController}
-     * @param sendFromId
-     * @param sendToId
-     * @param money
+     * @param sendFromId    id отправителя
+     * @param sendToId      id получателя
+     * @param money         сумму перевода
+     * @return обьект валидации CheckResponse {@link CheckResponse}
      * @see HttpController
+     * @see CheckResponse
      * @implSpec
-     * Все если тут
+     * Если пришедшие данные невозможно привести к типам необходимым для транзакции, вернёт ERROR
+     *
+     * Если сумма перевода отрицательная перезапишет переменную message сообщением ERROR_WITH_ZERO
+     *
+     * Если id отправителя равен id получателя перезапишет переменную message сообщением ERROR_SAME_ID
+     *
+     * Если клиент с первым указанным id отсутствует в базе данных перезапишет переменную message сообщением
+     * ERROR_CLIENT_NOT_FOUND и указанный id
+     *
+     * Если клиент со вторым указанным id отсутствует в базе данных перезапишет переменную message сообщением
+     * ERROR_CLIENT_NOT_FOUND и указанный id
+     *
+     * Если ранее было определено, что первый указанный id не найден, то переменную message не перезапишет,
+     * а дополнит сообщением ERROR_CLIENT_NOT_FOUND и указанный id
+     *
+     * Если переменная message менялась, значит была ошибка и метод вернёт обьект CheckResponse со статусом false
+     * и сообщением об ошибке. В противном случае вернёт обьект CheckResponse со статусом true и данными для транзакции.
      */
     public CheckResponse checkValid(String sendFromId, String sendToId, String money) {
         String message = null;
@@ -40,32 +60,23 @@ public class InputCheck {
         Integer host = null;
         BigDecimal rightSumm = null;
         try {
-            // Если пришедшие данные невозможно привести к типам необходимым для транзакции, вернёт ERROR
             sender = Integer.valueOf(sendFromId);
             host  = Integer.valueOf(sendToId);
             rightSumm = new BigDecimal(money);
             rightSumm = rightSumm.setScale(2, RoundingMode.HALF_UP);
 
-            // Если сумма перевода отрицательная перезапишет переменную message сообщением ERROR_WITH_ZERO
             if (BigDecimal.ZERO.compareTo(rightSumm) > 0) {
                 message = ERROR_WITH_ZERO;
             }
 
-            // Если id отправителя равен id получателя перезапишет переменную message сообщением ERROR_SAME_ID
             if (sender.equals(host)) {
                 message = ERROR_SAME_ID;
             }
 
-            // Если клиент с первым указанным id отсутствует в базе данных перезапишет переменную message сообщением
-            // ERROR_CLIENT_NOT_FOUND и указанный id
             if (!clientsRep.existsById(sender)) {
                 message = ERROR_CLIENT_NOT_FOUND + sender.toString();
             }
 
-            // Если клиент со вторым указанным id отсутствует в базе данных перезапишет переменную message сообщением
-            // ERROR_CLIENT_NOT_FOUND и указанный id.
-            // Если ранее было определено, что первый указанный id не найден, то переменную message не перезапишет,
-            // а дополнит сообщением ERROR_CLIENT_NOT_FOUND и указанный id.
             if (!clientsRep.existsById(host)) {
                 if (message !=  null && message.contains("Не найден клиент с id")) {
                     message += "\n" + ERROR_CLIENT_NOT_FOUND + host.toString();
@@ -76,15 +87,9 @@ public class InputCheck {
         } catch (NumberFormatException | NullPointerException e) {
             message = ERROR;
         } catch (Exception e) {
-            message = e.toString();
+            message = e.getMessage();
         }
 
-        // Если переменная message менялась, значит была ошибка и метод вернёт обьект CheckResponse со статусом false
-        // и сообщением об ошибке. В противном случае вернёт обьект CheckResponse со статусом true и данными для транзакции.
-        if (message != null) {
-            return CheckResponse.of(message);
-        } else {
-            return CheckResponse.of(sender, host, rightSumm);
-        }
+        return message != null ? CheckResponse.of(message) : CheckResponse.of(sender, host, rightSumm);
     }
 }

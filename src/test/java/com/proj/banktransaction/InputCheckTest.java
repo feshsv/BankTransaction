@@ -1,5 +1,8 @@
 package com.proj.banktransaction;
 
+import com.proj.banktransaction.repository.ClientsRep;
+import com.proj.banktransaction.validator.CheckResponse;
+import com.proj.banktransaction.validator.InputCheck;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,10 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class InputCheckTest {
+    private static final String ERROR = "EXCEPTION ERROR";
+    private static final Integer ID1 = 1;
+    private static final Integer ID2 = 2;
+    private static final BigDecimal SUM = new BigDecimal("1234.230");
 
     @Autowired
     private InputCheck inputCheck;
@@ -23,15 +30,12 @@ class InputCheckTest {
     @Test
     void checkValidSuccess() {
         when(clientsRep.existsById(anyInt())).thenReturn(true);
-        Integer id1 = 1;
-        Integer id2 = 2;
-        BigDecimal sum = new BigDecimal("1234.230");
-        CheckResponse checkResponse = inputCheck.checkValid(id1.toString(), id2.toString(), sum.toString());
+        CheckResponse checkResponse = inputCheck.checkValid(ID1.toString(), ID2.toString(), SUM.toString());
 
         Assert.assertTrue(checkResponse.isValid());
-        Assert.assertEquals(checkResponse.getSender(), id1);
-        Assert.assertEquals(checkResponse.getHost(), id2);
-        Assert.assertEquals(checkResponse.getRightSumm().compareTo(sum), 0);
+        Assert.assertEquals(checkResponse.getSender(), ID1);
+        Assert.assertEquals(checkResponse.getHost(), ID2);
+        Assert.assertEquals(checkResponse.getRightSumm().compareTo(SUM), 0);
     }
 
     @Test
@@ -48,11 +52,8 @@ class InputCheckTest {
 
     @Test
     void checkValidAllIdFailure() {
-        int id1 = 1;
-        int id2 = 2;
-        BigDecimal sum = new BigDecimal("1234.230");
         when(clientsRep.existsById(anyInt())).thenReturn(false);
-        CheckResponse checkResponse = inputCheck.checkValid(Integer.toString(id1), Integer.toString(id2), sum.toString());
+        CheckResponse checkResponse = inputCheck.checkValid(Integer.toString(ID1), Integer.toString(ID2), SUM.toString());
 
         Assert.assertFalse(checkResponse.isValid());
         Assert.assertNull(checkResponse.getSender());
@@ -64,12 +65,9 @@ class InputCheckTest {
 
     @Test
     void checkValidFistIdFailure() {
-        Integer id1 = 1;
-        Integer id2 = 2;
-        BigDecimal sum = new BigDecimal("1234.230");
-        when(clientsRep.existsById(id1)).thenReturn(false);
-        when(clientsRep.existsById(id2)).thenReturn(true);
-        CheckResponse checkResponse = inputCheck.checkValid(id1.toString(), id2.toString(), sum.toString());
+        when(clientsRep.existsById(ID1)).thenReturn(false);
+        when(clientsRep.existsById(ID2)).thenReturn(true);
+        CheckResponse checkResponse = inputCheck.checkValid(ID1.toString(), ID2.toString(), SUM.toString());
 
         Assert.assertFalse(checkResponse.isValid());
         Assert.assertNull(checkResponse.getSender());
@@ -80,12 +78,9 @@ class InputCheckTest {
 
     @Test
     void checkValidSecondIdFailure() {
-        Integer id1 = 1;
-        Integer id2 = 2;
-        BigDecimal sum = new BigDecimal("1234.230");
-        when(clientsRep.existsById(id1)).thenReturn(true);
-        when(clientsRep.existsById(id2)).thenReturn(false);
-        CheckResponse checkResponse = inputCheck.checkValid(id1.toString(), id2.toString(), sum.toString());
+        when(clientsRep.existsById(ID1)).thenReturn(true);
+        when(clientsRep.existsById(ID2)).thenReturn(false);
+        CheckResponse checkResponse = inputCheck.checkValid(ID1.toString(), ID2.toString(), SUM.toString());
 
         Assert.assertFalse(checkResponse.isValid());
         Assert.assertNull(checkResponse.getSender());
@@ -96,11 +91,8 @@ class InputCheckTest {
 
     @Test
     void checkValidGivesSameIdFailure() {
-        int id1 = 1;
-        int id2 = 1;
-        BigDecimal sum = new BigDecimal("1234.230");
         when(clientsRep.existsById(anyInt())).thenReturn(true);
-        CheckResponse checkResponse = inputCheck.checkValid(Integer.toString(id1), Integer.toString(id2), sum.toString());
+        CheckResponse checkResponse = inputCheck.checkValid(Integer.toString(ID1), Integer.toString(ID1), SUM.toString());
 
         Assert.assertFalse(checkResponse.isValid());
         Assert.assertNull(checkResponse.getSender());
@@ -111,11 +103,9 @@ class InputCheckTest {
 
     @Test
     void checkValidMoneyIsMinusFailure() {
-        int id1 = 1;
-        int id2 = 2;
-        BigDecimal sum = new BigDecimal("-1234.230");
+        BigDecimal minusSum = new BigDecimal("-1234.230");
         when(clientsRep.existsById(anyInt())).thenReturn(true);
-        CheckResponse checkResponse = inputCheck.checkValid(Integer.toString(id1), Integer.toString(id2), sum.toString());
+        CheckResponse checkResponse = inputCheck.checkValid(Integer.toString(ID1), Integer.toString(ID2), minusSum.toString());
 
         Assert.assertFalse(checkResponse.isValid());
         Assert.assertNull(checkResponse.getSender());
@@ -124,6 +114,10 @@ class InputCheckTest {
         Assert.assertEquals(checkResponse.getMessage(), "Заданное число меньше ноля. Укажите положительную сумму перевода.");
     }
 
+    @Test
+    void checkValidEX() {
+        when(clientsRep.existsById(anyInt())).thenThrow(new RuntimeException(ERROR));
 
-
+        Assert.assertEquals(inputCheck.checkValid(Integer.toString(ID1), Integer.toString(ID2), SUM.toString()).getMessage(), "EXCEPTION ERROR");
+    }
 }

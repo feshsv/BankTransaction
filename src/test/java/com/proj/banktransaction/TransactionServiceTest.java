@@ -1,5 +1,8 @@
 package com.proj.banktransaction;
 
+import com.proj.banktransaction.entityes.Clients;
+import com.proj.banktransaction.repository.ClientsRep;
+import com.proj.banktransaction.service.TransactionService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
